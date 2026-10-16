@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AetherGrid AI — Concerto for Piano &amp; Autonomous Fleet · Day One</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F1E8;  --panel:#FBF9F2;  --ivory:#F6F2E7;  --ebony:#1B1E20;
+  --ink:#191C1E;    --ink2:#4E555A;   --ink3:#8D9296;
+  --line:#D9D2C1;   --line2:#C6BEA9;
+  --teal:#0D5C63;   --teal-bg:rgba(13,92,99,.07);
+  --verm:#D2491E;   --verm-bg:rgba(210,73,30,.08);
+  --ochre:#A8700F;  --ochre-bg:rgba(168,112,15,.11);
+  --indigo:#3A5A94; --indigo-bg:rgba(58,90,148,.09);
+  --dark:#0F1A20;   --dark2:#152530;  --darkline:rgba(140,170,185,.22);
+  --ok:1; --ocols:3; --s:1;
+  --serif:'Fraunces', Georgia, serif;
+  --sans:'IBM Plex Sans', system-ui, sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:#E6E1D2;
+  background-image:radial-gradient(rgba(25,28,30,.05) 1px, transparent 1.2px);
+  background-size:22px 22px;
+  font-family:var(--sans); color:var(--ink); overflow:hidden;
+}
+.chrome{position:fixed;left:0;right:0;z-index:50;display:flex;align-items:center;
+  padding:14px 28px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink2);pointer-events:none}
+.chrome.top{top:0;justify-content:space-between}
+.chrome.bot{bottom:0;justify-content:space-between;align-items:flex-end}
+.wordmark{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--ink)}
+#section{color:var(--teal)}
+#section .tempo{color:var(--ink3)}
+#counter{color:var(--ink)} #counter b{font-weight:500}
+.hints{opacity:.75;letter-spacing:.12em}
+.navbtns{display:flex;gap:8px;pointer-events:auto}
+.navbtns button{font-family:var(--mono);font-size:13px;width:34px;height:30px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line2);color:var(--ink);
+  border-radius:4px;transition:all .15s}
+.navbtns button:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+.navbtns button.off{opacity:.4;text-decoration:line-through}
+#kb{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:55;
+  background:#14161A;border-radius:5px;padding:5px;display:flex;
+  box-shadow:0 12px 26px -12px rgba(20,22,24,.55)}
+.wk{width:30px;height:44px;background:var(--ivory);border-right:1px solid #B4AE9E;
+  position:relative;transition:background .3s;cursor:pointer}
+.wk:last-child{border-right:none}
+.wk.played{background:#D7E3DF}
+.wk.current{background:var(--teal)}
+.wk.hit{animation:strike .38s ease}
+@keyframes strike{0%{transform:translateY(0)}35%{transform:translateY(3px)}100%{transform:translateY(0)}}
+.bk{position:absolute;top:5px;width:15px;height:26px;background:var(--ebony);
+  border-radius:0 0 2px 2px;pointer-events:none;box-shadow:inset 0 -2px 0 rgba(255,255,255,.07)}
+@media (max-width:900px){#kb{display:none}}
+.stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;
+  transform:translate(-50%,-50%) scale(var(--s))}
+.slide{position:absolute;inset:0;background:var(--paper);
+  border:1px solid var(--line2);border-radius:6px;overflow:hidden;
+  box-shadow:0 40px 80px -40px rgba(20,22,24,.45);
+  padding:52px 72px 44px;
+  opacity:0;visibility:hidden;transform:translateX(30px);
+  transition:opacity .6s ease, transform .6s cubic-bezier(.3,.7,.3,1), visibility .6s;
+  background-image:radial-gradient(rgba(25,28,30,.045) 1px, transparent 1.2px);
+  background-size:26px 26px}
+.slide.active{opacity:1;visibility:visible;transform:none;z-index:5}
+.idx{position:absolute;top:16px;right:30px;font-family:var(--serif);font-weight:600;
+  font-size:104px;line-height:1;color:rgba(25,28,30,.055);user-select:none;pointer-events:none}
+.dyn{position:absolute;top:132px;right:34px;text-align:right;pointer-events:none;
+  font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink3)}
+.slide.dark .dyn{color:#6E8290}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.7,.3,1)}
+.slide.active .rv.in{opacity:1;transform:none}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--teal);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.kick::before{content:"";width:26px;height:1.5px;background:var(--teal)}
+.kick.v{color:var(--verm)}.kick.v::before{background:var(--verm)}
+.kick.i{color:var(--indigo)}.kick.i::before{background:var(--indigo)}
+h1{font-family:var(--serif);font-weight:600;font-size:88px;line-height:1;letter-spacing:-2.5px}
+.concerto{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--teal);margin-top:14px}
+h2{font-family:var(--serif);font-weight:600;font-size:42px;line-height:1.05;letter-spacing:-1px}
+p{font-size:14px;line-height:1.65;color:var(--ink2)}
+strong{color:var(--ink)}
+.figtag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink3);margin-top:10px;display:flex;gap:10px;align-items:center}
+.figtag::before{content:"";width:14px;height:1px;background:var(--line2)}
+.cols{display:grid;gap:22px}
+.c3{grid-template-columns:1fr 1fr 1fr}
+.fx{font-family:var(--serif);font-size:19px;color:var(--ink)}
+.fx i{font-style:italic}
+.fx sub,.fx sup{font-size:.6em}
+.fxnote{font-size:11.5px;color:var(--ink3);margin-top:8px;line-height:1.55}
+.path{font-family:var(--mono);font-size:11px;background:var(--teal-bg);color:var(--teal);
+  padding:2px 7px;border-radius:3px;white-space:nowrap}
+.program{border:2px solid var(--ink);border-radius:3px;padding:4px;background:var(--panel)}
+.program-in{border:1px solid var(--line2);padding:24px 26px}
+.orn{display:flex;align-items:center;gap:12px;color:var(--ink3);font-size:10px}
+.orn::before,.orn::after{content:"";flex:1;height:1px;background:var(--line2)}
+.lr{display:flex;align-items:baseline;gap:10px;padding:7px 0}
+.lr .l{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+.lr .dots{flex:1;border-bottom:1.5px dotted var(--line2);transform:translateY(-3px)}
+.lr .r{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink)}
+.lr.big .r{font-size:17px;font-weight:500}
+.dc{font-family:var(--serif);font-size:17.5px;line-height:1.68;color:var(--ink);max-width:590px}
+.dc::first-letter{font-size:64px;line-height:.82;float:left;padding:8px 12px 0 0;color:var(--teal);font-weight:600}
+.insrow{display:grid;grid-template-columns:220px 200px 1fr 120px;gap:18px;align-items:center;
+  padding:15px 18px;background:var(--panel);border:1px solid var(--line);border-radius:6px;position:relative;z-index:2}
+.insrow .role{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink)}
+.insrow .role small{display:block;font-family:var(--mono);font-style:normal;font-size:9px;
+  letter-spacing:.2em;color:var(--ink3);margin-top:3px;text-transform:uppercase}
+.insrow .sec{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--teal);font-weight:500}
+.insrow .det{font-size:12.5px;color:var(--ink2);line-height:1.5}
+.insrow .dn{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink3);text-align:right}
+.motif{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--ink);
+  border-radius:7px;padding:18px 20px;position:relative;overflow:hidden}
+.motif .ghost{position:absolute;top:-16px;right:4px;font-family:var(--serif);font-weight:600;
+  font-size:84px;color:rgba(25,28,30,.06);line-height:1}
+.motif .mt{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:10px}
+.motif .mt b{color:var(--ink);font-weight:500}
+.reh{width:36px;height:36px;border:1.5px solid var(--ink);border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:16px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);
+  border:1px solid var(--line2);border-radius:20px;padding:4px 12px;background:var(--panel)}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.t{background:var(--teal)}.dot.v{background:var(--verm)}
+.dot.o{background:var(--ochre)}.dot.i{background:var(--indigo)}
+.slide.dark{background:var(--dark);color:#E7E2D4;
+  background-image:radial-gradient(rgba(231,226,212,.05) 1px, transparent 1.2px)}
+.slide.dark .idx{color:rgba(231,226,212,.06)}
+.slide.dark h2{color:#F0ECDF}
+.dpanel{background:var(--dark2);border:1px solid var(--darkline);border-radius:8px}
+.stack{display:flex;flex-direction:column;gap:18px}
+svg text{font-family:var(--mono)}
+.lab{font-size:10px;letter-spacing:.12em;fill:var(--ink3)}
+.draw{stroke-dasharray:1;stroke-dashoffset:1}
+.slide.active .draw{animation:dash 1.9s .7s cubic-bezier(.4,0,.3,1) forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.pulse{transform-origin:center;transform-box:fill-box;animation:pul 2.2s ease-out infinite}
+@keyframes pul{0%{transform:scale(.4);opacity:.85}80%{transform:scale(1.9);opacity:0}100%{opacity:0}}
+body.ov{overflow:auto}
+body.ov .stage{position:static;transform:none;width:auto;height:auto;display:grid;
+  grid-template-columns:repeat(var(--ocols), calc(1280px * var(--ok)));
+  gap:30px;padding:80px 64px 130px}
+body.ov .slide{position:relative;inset:auto;opacity:1;visibility:visible;transform:scale(var(--ok));
+  transform-origin:0 0;cursor:pointer;
+  margin:0 calc(-1280px * (1 - var(--ok))) calc(-720px * (1 - var(--ok))) 0;
+  outline:1px solid var(--line2)}
+body.ov .slide.active{outline:3px solid var(--teal)}
+body.ov .slide::after{content:attr(data-num);position:absolute;top:14px;left:20px;
+  font-family:var(--mono);font-size:30px;color:var(--teal)}
+body.ov .rv{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  .rv,.slide,.wk.hit{transition:none;animation:none!important}
+  .draw{stroke-dashoffset:0;animation:none}
+  .pulse{animation:none;opacity:0}
+}
+</style>
+</head>
+<body>
+
+<div class="chrome top">
+  <div class="wordmark">
+    <svg width="22" height="16" viewBox="0 0 22 16">
+      <rect x="0.5" y="0.5" width="21" height="15" fill="#F6F2E7" stroke="#191C1E"/>
+      <line x1="5.75" y1="0.5" x2="5.75" y2="15.5" stroke="#191C1E"/>
+      <line x1="11" y1="0.5" x2="11" y2="15.5" stroke="#191C1E"/>
+      <line x1="16.25" y1="0.5" x2="16.25" y2="15.5" stroke="#191C1E"/>
+      <rect x="4.1" y="0.5" width="3.2" height="8.5" fill="#1B1E20"/>
+      <rect x="9.35" y="0.5" width="3.2" height="8.5" fill="#1B1E20"/>
+      <rect x="14.6" y="0.5" width="3.2" height="8.5" fill="#1B1E20"/>
+    </svg>
+    AETHERGRID&nbsp;AI
+  </div>
+  <div id="section"></div>
+  <div id="counter"><b>01</b> / 06</div>
+</div>
+<div class="chrome bot">
+  <div class="hints">← → PLAY&nbsp;&nbsp;·&nbsp;&nbsp;G SCORE OVERVIEW&nbsp;&nbsp;·&nbsp;&nbsp;NO INTERMISSION</div>
+  <div class="navbtns">
+    <button id="prev" aria-label="previous">‹</button>
+    <button id="snd" aria-label="toggle sound" title="sound">♪</button>
+    <button id="ovbtn" aria-label="overview" title="overview (G)">⊞</button>
+    <button id="next" aria-label="next">›</button>
+  </div>
+</div>
+<div id="kb" aria-hidden="true"></div>
+
+<div class="stage" id="stage">
+
+<!-- 01 · OUVERTURE -->
+<section class="slide" data-section="OUVERTURE" style="padding-bottom:196px">
+  <div class="idx">01</div>
+  <div class="cols" style="grid-template-columns:1.05fr .95fr;height:100%">
+    <div style="display:flex;flex-direction:column;justify-content:flex-start;padding-right:20px;padding-top:4px;position:relative;z-index:2">
+      <div class="kick rv">Day One · Opening Night · v0.1.0</div>
+      <h1 class="rv">AetherGrid&nbsp;AI</h1>
+      <div class="concerto rv">Concerto for Piano &amp; Autonomous Fleet — in three movements</div>
+      <p class="rv" style="margin-top:18px;max-width:540px;font-size:15px">An autonomous logistics
+        &amp; emergency-dispatch simulation, to be performed live: stochastic calls, a mutating street
+        graph, and a fleet that learns where the music is about to be. Tonight is the score — the
+        performance begins with Phase One.</p>
+      <div class="rv" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:24px">
+        <span class="chip"><span class="dot t"></span>Dynamic Routing</span>
+        <span class="chip"><span class="dot v"></span>Emergency Triage</span>
+        <span class="chip"><span class="dot o"></span>VRPTW Logistics</span>
+        <span class="chip"><span class="dot i"></span>RL Positioning</span>
+      </div>
+      <div class="rv" style="margin-top:28px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3)">
+        DURATION ≈ 10 MIN — NO INTERMISSION — SCORED FOR SEEDED PYTHON</div>
+    </div>
+    <div class="rv" style="position:relative">
+      <svg width="260" height="420" viewBox="0 0 260 420" style="position:absolute;right:-34px;top:-10px;opacity:.055;z-index:0">
+        <ellipse cx="70" cy="330" rx="30" ry="22" transform="rotate(-18 70 330)" fill="var(--ink)"/>
+        <rect x="95" y="60" width="8" height="272" fill="var(--ink)"/>
+        <path d="M103 60 C 150 84, 156 140, 118 176 C 148 138, 142 100, 103 84 Z" fill="var(--ink)"/>
+      </svg>
+      <div class="program" style="position:relative;z-index:1">
+        <div class="program-in">
+          <div class="orn" style="font-family:var(--mono);letter-spacing:.3em;margin-bottom:14px">PROGRAMME</div>
+          <div class="lr big"><span class="l">Overture</span><span class="dots"></span><span class="r">AetherGrid AI</span></div>
+          <div class="lr big"><span class="l">I · Esposizione</span><span class="dots"></span><span class="r">The Stochastic City</span></div>
+          <div class="lr big"><span class="l">II · Sviluppo</span><span class="dots"></span><span class="r">The Orchestra &amp; Three Motifs</span></div>
+          <div class="lr big"><span class="l">III · Rondò</span><span class="dots"></span><span class="r">Mission Control, On Stage</span></div>
+          <div class="lr big"><span class="l">Coda</span><span class="dots"></span><span class="r">Da Capo — Phase One</span></div>
+          <div class="orn" style="margin:16px 0 12px">◆</div>
+          <div class="lr"><span class="l">Soloist</span><span class="dots"></span><span class="r">Simulation Engine (headless, seeded)</span></div>
+          <div class="lr"><span class="l">Orchestra</span><span class="dots"></span><span class="r">Pathfinding · Dispatch · RL Core</span></div>
+          <div class="lr"><span class="l">Hall</span><span class="dots"></span><span class="r">Web Mission Control — 60 fps canvas</span></div>
+          <div class="lr"><span class="l">Instrument</span><span class="dots"></span><span class="r">Python 3.11 · stdlib + NumPy · venv</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rv" style="position:absolute;left:72px;right:72px;bottom:40px">
+    <svg width="100%" viewBox="0 0 1140 122">
+      <g stroke="var(--line2)" stroke-width="1">
+        <line x1="40" y1="34" x2="1100" y2="34"/><line x1="40" y1="44" x2="1100" y2="44"/>
+        <line x1="40" y1="54" x2="1100" y2="54"/><line x1="40" y1="64" x2="1100" y2="64"/>
+        <line x1="40" y1="74" x2="1100" y2="74"/>
+      </g>
+      <g stroke="var(--line2)" stroke-width="1.2">
+        <line x1="220" y1="34" x2="220" y2="74"/><line x1="400" y1="34" x2="400" y2="74"/>
+        <line x1="760" y1="34" x2="760" y2="74"/><line x1="940" y1="34" x2="940" y2="74"/>
+        <line x1="1064" y1="34" x2="1064" y2="74"/>
+      </g>
+      <rect x="1070" y="34" width="3.5" height="40" fill="var(--ink)"/>
+      <line x1="840" y1="24" x2="860" y2="24" stroke="var(--line2)" stroke-width="1.2"/>
+      <g stroke="var(--ink)" stroke-width="1.5">
+        <line x1="135.2" y1="59" x2="135.2" y2="33"/>
+        <line x1="304.8" y1="49" x2="304.8" y2="75"/>
+        <line x1="484.8" y1="44" x2="484.8" y2="70"/>
+        <line x1="664.8" y1="39" x2="664.8" y2="65"/>
+        <line x1="844.8" y1="24" x2="844.8" y2="50"/>
+        <line x1="1035.2" y1="64" x2="1035.2" y2="38"/>
+      </g>
+      <g fill="var(--ink)">
+        <ellipse cx="130" cy="59" rx="5.4" ry="3.9" transform="rotate(-18 130 59)"/>
+        <ellipse cx="310" cy="49" rx="5.4" ry="3.9" transform="rotate(-18 310 49)"/>
+        <ellipse cx="490" cy="44" rx="5.4" ry="3.9" transform="rotate(-18 490 44)"/>
+        <ellipse cx="670" cy="39" rx="5.4" ry="3.9" transform="rotate(-18 670 39)"/>
+        <ellipse cx="850" cy="24" rx="5.6" ry="4" transform="rotate(-18 850 24)" fill="var(--verm)"/>
+        <ellipse cx="1030" cy="64" rx="5.6" ry="4" transform="rotate(-18 1030 64)"
+          fill="var(--paper)" stroke="var(--ink)" stroke-width="1.8"/>
+      </g>
+      <path d="M 1016 30 Q 1030 12 1044 30" fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+      <circle cx="1030" cy="26.5" r="1.8" fill="var(--ink)"/>
+      <text x="112" y="98" font-family="var(--serif)" font-style="italic" font-size="13" fill="var(--ink3)">pp</text>
+      <g stroke="var(--ink3)" stroke-width="1.1">
+        <line x1="380" y1="96" x2="740" y2="86"/><line x1="380" y1="96" x2="740" y2="106"/>
+      </g>
+      <text x="838" y="14" font-family="var(--serif)" font-style="italic" font-weight="600" font-size="14" fill="var(--verm)">ff</text>
+      <text x="1006" y="98" font-family="var(--serif)" font-style="italic" font-size="13" fill="var(--ink3)">pp</text>
+      <g font-size="9.5" fill="var(--ink3)" letter-spacing="2" text-anchor="middle">
+        <text x="130" y="114">OVERTURE</text><text x="310" y="114">I · ESPOSIZIONE</text>
+        <text x="580" y="114">II · SVILUPPO</text><text x="850" y="114">III · RONDÒ</text>
+        <text x="1030" y="114">CODA</text>
+      </g>
+    </svg>
+    <div class="figtag">The evening's theme — six notes, one per slide · pitch is intensity · tonight's deck is audible: each slide strikes its key</div>
+  </div>
+</section>
+
+<!-- 02 · MOV I -->
+<section class="slide" data-section="MOV. I · ESPOSIZIONE">
+  <div class="idx">02</div>
+  <svg width="100%" height="110" viewBox="0 0 1280 110" preserveAspectRatio="none"
+    style="position:absolute;left:0;bottom:0;opacity:.4;pointer-events:none">
+    <g stroke="var(--line2)" stroke-width="1">
+      <line x1="0" y1="25" x2="1280" y2="25"/><line x1="0" y1="40" x2="1280" y2="40"/>
+      <line x1="0" y1="55" x2="1280" y2="55"/><line x1="0" y1="70" x2="1280" y2="70"/>
+      <line x1="0" y1="85" x2="1280" y2="85"/>
+    </g>
+    <ellipse cx="980" cy="55" rx="6" ry="4.4" transform="rotate(-18 980 55)" fill="var(--ink3)" opacity=".5"/>
+    <ellipse cx="1120" cy="40" rx="6" ry="4.4" transform="rotate(-18 1120 40)" fill="var(--ink3)" opacity=".5"/>
+  </svg>
+  <div class="kick v rv">I · Esposizione — first theme</div>
+  <h2 class="rv">The city improvises.<br>Dispatch must conduct.</h2>
+  <div class="cols" style="grid-template-columns:1.05fr .95fr;margin-top:28px">
+    <p class="dc rv">Every morning the city begins an improvisation: calls arrive like rain —
+      Poisson-distributed, impatient, weighted by urgency. Streets change tempo mid-phrase;
+      weather re-writes the friction of every edge. Against this, a heterogeneous fleet —
+      ambulances, fire engines, drones, vans — must answer with hard deadlines and finite
+      batteries. AetherGrid answers with a rolling score: calls gather for one beat
+      (Δ&nbsp;=&nbsp;5&nbsp;s), an assignment solver couples every voice to every call on the live
+      graph, and a learned policy moves idle units toward tomorrow's risk before it sounds.</p>
+    <div class="rv" style="background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--verm);border-radius:7px;padding:22px 26px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase;margin-bottom:12px">Cadenza · the impossible number</div>
+      <div style="font-family:var(--serif);font-weight:600;font-size:46px;letter-spacing:-1px">
+        20<sup style="font-size:.45em">12</sup> ≈ 4.09 × 10<sup style="font-size:.45em">15</sup></div>
+      <div class="fxnote">naive assignments for 20 vehicles × 12 calls — a score no one sight-reads. (Pure arithmetic — no simulation needed.)</div>
+      <div style="border-top:1px dashed var(--line);margin:14px 0"></div>
+      <p style="font-size:13.5px"><strong>The Hungarian method</strong> takes the exact optimum in
+        O(<i style="font-family:var(--serif)">n</i>³) ≈ 1.7k operations — resolved between two beats of the batch window.</p>
+      <div style="border-top:1px dashed var(--line);margin:14px 0"></div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--verm);text-transform:uppercase;margin-bottom:8px">Motif I · arrivals</div>
+      <div class="fx" style="font-size:17px">P(<i>N</i>(t)=k) = (λt)<sup>k</sup> e<sup>−λt</sup> / k!</div>
+      <div class="fxnote">rush hour will play at 2.4 λ₀ · seeded, so every future rehearsal is identical.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 · MOV II — ORCHESTRA -->
+<section class="slide" data-section="MOV. II · SVILUPPO">
+  <div class="idx">03</div>
+  <svg width="100%" height="100%" viewBox="0 0 1280 720" preserveAspectRatio="none"
+    style="position:absolute;inset:0;pointer-events:none">
+    <g stroke="rgba(25,28,30,.06)" stroke-width="1.2">
+      <line x1="0" y1="240" x2="1280" y2="240"/><line x1="0" y1="320" x2="1280" y2="320"/>
+      <line x1="0" y1="400" x2="1280" y2="400"/><line x1="0" y1="480" x2="1280" y2="480"/>
+      <line x1="0" y1="560" x2="1280" y2="560"/>
+    </g>
+  </svg>
+  <div class="kick rv">II · Sviluppo — instrumentation</div>
+  <h2 class="rv">Scored for engine, three algorithm choirs,<br>and a live hall</h2>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:26px;position:relative;z-index:2">
+    <div class="insrow rv">
+      <div class="role">Basso continuo<small>keeps the pulse</small></div>
+      <div class="sec">SIMULATION ENGINE</div>
+      <div class="det">grid &amp; network graph · agent physics &amp; battery FSM · Poisson incident generator — discrete ticks, a seeded metronome</div>
+      <div class="dn">mp · <span class="path" style="font-size:10px">core/</span></div>
+    </div>
+    <div class="insrow rv">
+      <div class="role">Woodwinds<small>carry the melody</small></div>
+      <div class="sec">PATHFINDING SUITE</div>
+      <div class="det">Dynamic A* on live edge costs · Dijkstra ETA matrices for the matcher · HPA* for long-haul routes</div>
+      <div class="dn">mf · <span class="path" style="font-size:10px">ai/pathfinding</span></div>
+    </div>
+    <div class="insrow rv">
+      <div class="role">Brass<small>the decisive entries</small></div>
+      <div class="sec">DISPATCHERS</div>
+      <div class="det">Hungarian batch matching (Δ = 5 s, SLA-aware costs) · Genetic VRPTW for multi-drop logistics</div>
+      <div class="dn">f · <span class="path" style="font-size:10px">ai/dispatchers</span></div>
+    </div>
+    <div class="insrow rv">
+      <div class="role">Percussion<small>strikes before the beat</small></div>
+      <div class="sec">RL CORE</div>
+      <div class="det">Q-Learning → DQN policy re-positioning idle units toward forecast risk — answers the call before it exists</div>
+      <div class="dn">mf, misterioso · <span class="path" style="font-size:10px">ai/rl_agent</span></div>
+    </div>
+    <div class="insrow rv">
+      <div class="role">Podium &amp; hall<small>where it is heard</small></div>
+      <div class="sec">MISSION CONTROL</div>
+      <div class="det">WebSocket diffs @10 Hz → 60 fps canvas · telemetry · scenario lab · dispatcher hot-swap, mid-performance</div>
+      <div class="dn">tutti · <span class="path" style="font-size:10px">web/</span></div>
+    </div>
+  </div>
+  <div class="figtag rv">Soloists enter on cue — every strategy is a runtime callback; the same engine performs headless (CI) or before an audience (dashboard)</div>
+</section>
+
+<!-- ============================================================
+     04 · MOV II — THREE MOTIFS, REVIEWED + THE LOOP THAT PLAYS THEM
+============================================================ -->
+<section class="slide" data-section="MOV. II · SVILUPPO">
+  <div class="idx">04</div>
+  <div class="kick rv">II · Sviluppo — the themes, and how they play together</div>
+  <h2 class="rv">Three motifs — and the loop that plays them</h2>
+
+  <div class="cols c3" style="margin-top:22px">
+    <!-- MOTIF I -->
+    <div class="motif rv" style="border-top-color:var(--teal)">
+      <div class="ghost">I</div>
+      <div class="mt"><b>Motif I ♩</b> · motion — pricing the world</div>
+      <div class="fx" style="font-size:15.5px;line-height:1.6"><i>c</i>(e,t) = ℓ<sub>e</sub>·τ<sub>terr</sub>·(1 + α·ρ<sub>e</sub>(t))·ω<sub>wx</sub> + β·𝟙[hazard<sub>e</sub>]</div>
+      <div class="fxnote">ℓ<sub>e</sub> is <b>free-flow traversal time</b>, so every cost in the system is seconds — distance, congestion and deadlines share one unit. Closure ≠ hazard: a closed edge leaves the graph (e ∉ E<sub>t</sub>); a hazard only raises its price. α = 0.85, β = 45 s.</div>
+    </div>
+    <!-- MOTIF II -->
+    <div class="motif rv" style="border-top-color:var(--ochre)">
+      <div class="ghost">II</div>
+      <div class="mt"><b>Motif II ♪</b> · assignment — matching voice to call</div>
+      <div class="fx" style="font-size:14.5px;line-height:1.6">min Σ<sub>ij</sub> c<sub>ij</sub>·x<sub>ij</sub> &nbsp;s.t.&nbsp; Σ<sub>j</sub>x<sub>ij</sub> ≤ 1, Σ<sub>i</sub>x<sub>ij</sub> ≤ 1, x ∈ {0,1}<br>
+      <span style="font-size:12.5px;color:var(--ink2)">c<sub>ij</sub> = ETA<sub>ij</sub> + μ·max(0,&nbsp;t + ETA<sub>ij</sub> − D<sub>j</sub>)</span></div>
+      <div class="fxnote">The matcher never sees the map — only prices from Motif I: ETA<sub>ij</sub> = dist<sub>c(t)</sub>(pos<sub>i</sub>, call<sub>j</sub>). Tardiness against the <b>arrival</b> deadline D<sub>j</sub> is priced by μ. Leftover calls re-buffer; leftover vehicles stay idle — and become Motif III's input.</div>
+    </div>
+    <!-- MOTIF III -->
+    <div class="motif rv" style="border-top-color:var(--indigo)">
+      <div class="ghost">III</div>
+      <div class="mt"><b>Motif III ♫</b> · foresight — arranging the idle</div>
+      <div class="fx" style="font-size:14.5px;line-height:1.6">Q(s,a) ← Q(s,a) + η[ r + γ·max<sub>a′</sub> Q(s′,a′) − Q(s,a) ]<br>
+      <span style="font-size:12.5px;color:var(--ink2)">r = −Σ<sub>j</sub> w<sub>j</sub>·T<sub>j</sub> − κ·ΔE + b·𝟙[SLA kept]</span></div>
+      <div class="fxnote">η is the learning rate — Motif I keeps α. Acts only on <b>idle</b> units between beats (relocate or stay, sector-level) and never overrides a live dispatch; it only arranges capacity so the next matching costs less.</div>
+    </div>
+  </div>
+
+  <!-- ONE BEAT OF THE SYSTEM -->
+  <div class="rv" style="margin-top:18px">
+    <svg width="100%" viewBox="0 0 1130 204">
+      <defs>
+        <marker id="m4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ink2)"/></marker>
+        <marker id="m4t" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--teal)"/></marker>
+        <marker id="m4i" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--indigo)"/></marker>
+      </defs>
+
+      <!-- Motif III feedback arc -->
+      <path d="M 990 64 C 990 10, 330 10, 330 58" fill="none" stroke="var(--indigo)" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#m4i)"/>
+      <text x="660" y="18" text-anchor="middle" font-size="9" letter-spacing="1.5" fill="var(--indigo)">MOTIF III ♫ · IDLE UNITS REPOSITION TOWARD FORECAST RISK — BEFORE THE NEXT CALL</text>
+
+      <!-- stage boxes -->
+      <g>
+        <rect x="50" y="64" width="150" height="52" rx="6" fill="var(--panel)" stroke="var(--line2)"/>
+        <text x="125" y="86" text-anchor="middle" font-size="9.5" letter-spacing="1" fill="var(--ink)">λ(t) ARRIVALS</text>
+        <text x="125" y="102" text-anchor="middle" font-size="8.5" fill="var(--ink3)">calls buffer one beat</text>
+
+        <rect x="250" y="64" width="160" height="52" rx="6" fill="var(--panel)" stroke="var(--line2)"/>
+        <text x="330" y="86" text-anchor="middle" font-size="9.5" letter-spacing="1" fill="var(--ink)">ETA MATRIX</text>
+        <text x="330" y="102" text-anchor="middle" font-size="8.5" fill="var(--ink3)">dist<tspan font-size="6" dy="2">c(t)</tspan><tspan dy="-2">(pos</tspan><tspan font-size="6" dy="2">i</tspan><tspan dy="-2"> → call</tspan><tspan font-size="6" dy="2">j</tspan><tspan dy="-2">)</tspan></text>
+
+        <rect x="460" y="64" width="190" height="52" rx="6" fill="var(--panel)" stroke="var(--ochre)" stroke-width="1.6"/>
+        <text x="555" y="86" text-anchor="middle" font-size="9.5" letter-spacing="1" fill="var(--ochre)">MOTIF II ♪ · HUNGARIAN</text>
+        <text x="555" y="102" text-anchor="middle" font-size="8.5" fill="var(--ink3)">min Σ c<tspan font-size="6" dy="2">ij</tspan><tspan dy="-2">x</tspan><tspan font-size="6" dy="2">ij</tspan><tspan dy="-2"> · beat Δ = 5 s ♩</tspan></text>
+
+        <rect x="700" y="64" width="150" height="52" rx="6" fill="var(--panel)" stroke="var(--line2)"/>
+        <text x="775" y="86" text-anchor="middle" font-size="9.5" letter-spacing="1" fill="var(--ink)">DISPATCH</text>
+        <text x="775" y="102" text-anchor="middle" font-size="8.5" fill="var(--ink3)">A* routes execute · SLAs tick</text>
+
+        <rect x="900" y="64" width="180" height="52" rx="6" fill="var(--panel)" stroke="var(--line2)"/>
+        <text x="990" y="86" text-anchor="middle" font-size="9.5" letter-spacing="1" fill="var(--ink)">SERVICE → IDLE</text>
+        <text x="990" y="102" text-anchor="middle" font-size="8.5" fill="var(--ink3)">agents return to the pool</text>
+      </g>
+
+      <!-- flow arrows -->
+      <g stroke="var(--ink2)" stroke-width="1.4">
+        <line x1="202" y1="90" x2="244" y2="90" marker-end="url(#m4)"/>
+        <line x1="412" y1="90" x2="454" y2="90" marker-end="url(#m4)"/>
+        <line x1="652" y1="90" x2="694" y2="90" marker-end="url(#m4)"/>
+        <line x1="852" y1="90" x2="894" y2="90" marker-end="url(#m4)"/>
+      </g>
+
+      <!-- Motif I substrate -->
+      <line x1="330" y1="140" x2="330" y2="121" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#m4t)"/>
+      <text x="340" y="134" font-size="8.5" fill="var(--teal)">c(e,t)</text>
+      <rect x="50" y="142" width="1030" height="46" rx="6" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.2"/>
+      <text x="66" y="161" font-size="9" letter-spacing="1.5" fill="var(--teal)">MOTIF I ♩ · LIVE COST FIELD — UPDATED CONTINUOUSLY, NOT A STAGE IN THE SEQUENCE</text>
+      <text x="66" y="178" font-size="8.5" fill="var(--ink2)">congestion ρ(t) · weather ω · hazards +β · closures remove edges · the priced graph feeds every ETA query on this beat</text>
+    </svg>
+    <div class="figtag">Fig · one beat of the system — the motifs are not alternatives; one loop plays all three at once, every Δ = 5 s</div>
+    <div style="margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:13px 22px;text-align:center">
+      <span style="font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink)">
+        Motion <span style="color:var(--teal)">prices the world</span> ·
+        Assignment <span style="color:var(--ochre)">spends that price optimally</span> ·
+        Foresight <span style="color:var(--indigo)">arranges the orchestra so the next beat costs less</span>.
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- 05 · MOV III — storyboard + hypotheses -->
+<section class="slide dark" data-section="MOV. III · RONDÒ">
+  <div class="idx">05</div>
+  <div class="kick rv" style="color:#5FA8A0">III · Rondò — the stage, not the recording</div>
+  <h2 class="rv">Mission Control — what opening night will look like</h2>
+  <p class="rv" style="color:#9FB0B6;font-size:13.5px;max-width:880px;margin-top:8px">
+    The engine is not built yet — so there are no measurements, and we make no fulfillment promises;
+    large-scale testing in real deployment can go awry in ways no design review can guarantee against.
+    Instead, three <b style="color:#E7E2D4">hypotheses</b>, stated before any data exists — each with the experiment
+    that will test it and the condition that would falsify it. Left: the Phase 3 UI storyboard.</p>
+  <div class="cols rv" style="grid-template-columns:1.4fr .6fr;margin-top:18px;align-items:stretch">
+    <div class="stack" style="gap:12px">
+      <div class="dpanel" style="padding:10px;position:relative">
+        <div style="position:absolute;top:16px;right:16px;z-index:3;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:#D8A24A;border:1px solid rgba(216,162,74,.55);padding:4px 9px;border-radius:3px;background:rgba(21,37,48,.92)">STORYBOARD · NOT LIVE DATA</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 6px 8px">
+          <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:#7C8F97">UI SPEC · WS DIFFS @10HZ → 60FPS CANVAS · NODE INSPECTOR</div>
+          <div style="font-family:var(--mono);font-size:9.5px;display:flex;gap:12px">
+            <span style="color:#7C8F97;cursor:pointer">GREEDY</span>
+            <span style="color:#5FA8A0;border-bottom:2px solid #5FA8A0;padding-bottom:2px">HUNGARIAN</span>
+            <span style="color:#7C8F97;cursor:pointer">RL-DQN</span>
+          </div>
+        </div>
+        <svg width="100%" viewBox="0 0 620 292" style="border-radius:5px;background:#0C151B">
+          <g stroke="#1E313C" stroke-width="1">
+            <line x1="80" y1="0" x2="80" y2="292"/><line x1="180" y1="0" x2="180" y2="292"/>
+            <line x1="290" y1="0" x2="290" y2="292"/><line x1="400" y1="0" x2="400" y2="292"/>
+            <line x1="510" y1="0" x2="510" y2="292"/>
+            <line x1="0" y1="52" x2="620" y2="52"/><line x1="0" y1="124" x2="620" y2="124"/>
+            <line x1="0" y1="196" x2="620" y2="196"/><line x1="0" y1="258" x2="620" y2="258"/>
+          </g>
+          <circle cx="450" cy="80" r="72" fill="rgba(210,73,30,.10)"/>
+          <circle cx="450" cy="80" r="40" fill="rgba(210,73,30,.14)"/>
+          <circle cx="150" cy="222" r="58" fill="rgba(168,112,15,.10)"/>
+          <line x1="290" y1="124" x2="400" y2="124" stroke="#E07850" stroke-width="3" stroke-dasharray="6 5"/>
+          <text x="306" y="116" font-size="9" fill="#E07850" letter-spacing="1.5">CLOSED · BR-2</text>
+          <polyline points="80,258 80,196 180,196 180,124 290,124 290,52 400,52" fill="none" stroke="#5FA8A0" stroke-width="3" pathLength="1" class="draw"/>
+          <polyline points="510,258 510,196 400,196 400,124" fill="none" stroke="#D8A24A" stroke-width="2.5" stroke-dasharray="8 5"/>
+          <g transform="translate(180,158)"><path d="M0,-8 L6,6 L0,2.5 L-6,6 Z" fill="#8FD0C9"/></g>
+          <text x="190" y="162" font-size="9" fill="#8FD0C9">V-08</text>
+          <g transform="translate(452,196) rotate(-90)"><path d="M0,-8 L6,6 L0,2.5 L-6,6 Z" fill="#E2B76B"/></g>
+          <text x="462" y="200" font-size="9" fill="#E2B76B">r-V3</text>
+          <circle cx="400" cy="52" r="6" fill="#E07850"/>
+          <circle cx="400" cy="52" r="11" fill="none" stroke="#E07850" stroke-width="1.5" class="pulse"/>
+          <circle cx="450" cy="80" r="5" fill="#E07850" opacity=".85"/>
+          <circle cx="450" cy="80" r="9" fill="none" stroke="#E07850" stroke-width="1.2" class="pulse" style="animation-delay:.9s"/>
+          <circle cx="80" cy="258" r="12" fill="none" stroke="#F0ECDF" stroke-width="1.3" stroke-dasharray="3 3"/>
+          <text x="12" y="18" font-size="9" fill="#42596A" letter-spacing="2">STORYBOARD FRAME · SCENARIO: INJECTED HAZMAT + CLOSED BRIDGE</text>
+        </svg>
+      </div>
+      <div class="dpanel" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-family:var(--mono);font-size:10px;color:#9FB0B6">SPEC: STRATEGY HOT-SWAP MID-RUN · SCENARIO LAB · PER-NODE COST INSPECTOR</span>
+        <span style="display:flex;gap:6px">
+          <button style="background:none;border:1px solid var(--darkline);color:#E7E2D4;font-family:var(--mono);font-size:9px;padding:5px 8px;border-radius:4px">HAZMAT</button>
+          <button style="background:none;border:1px solid var(--darkline);color:#E7E2D4;font-family:var(--mono);font-size:9px;padding:5px 8px;border-radius:4px">RUSH HOUR</button>
+          <button style="background:none;border:1px solid var(--darkline);color:#E7E2D4;font-family:var(--mono);font-size:9px;padding:5px 8px;border-radius:4px">CLOSE BRIDGE</button>
+        </span>
+      </div>
+    </div>
+    <div class="dpanel" style="padding:8px 24px">
+      <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:#7C8F97;text-transform:uppercase;padding:12px 0 2px">Pre-registered hypotheses · stated before data exists</div>
+      <div style="padding:12px 0 10px;border-bottom:1px solid var(--darkline)">
+        <div style="font-family:var(--serif);font-style:italic;font-size:30px;color:#F0ECDF;letter-spacing:.5px">
+          T<sub style="font-size:.5em">greedy</sub> &gt; T<sub style="font-size:.5em">hung</sub> &gt; T<sub style="font-size:.5em">RL</sub></div>
+        <div style="font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#7C8F97;margin-top:5px">RESPONSE TIME · THE ORDERING WE BET ON</div>
+      </div>
+      <div style="padding:12px 0;border-bottom:1px solid var(--darkline)">
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#5FA8A0">H1 · MATCHING BEATS GREED</div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:#E7E2D4;line-height:1.5;margin-top:6px">Under bursty demand, batch-optimal assignment answers faster and keeps more SLAs than myopic nearest-unit dispatch.</div>
+        <div style="font-family:var(--mono);font-size:8.5px;color:#54707C;letter-spacing:.08em;margin-top:7px;line-height:1.9">TEST · SEEDED A/B, IDENTICAL CALL STREAMS<br>FALSIFIED IF · NO STATISTICAL SEPARATION</div>
+      </div>
+      <div style="padding:12px 0;border-bottom:1px solid var(--darkline)">
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#5FA8A0">H2 · FORESIGHT COMPOUNDS</div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:#E7E2D4;line-height:1.5;margin-top:6px">RL pre-positioning improves on matching alone — ETAs shrink before assignment because idle units are already near the incident.</div>
+        <div style="font-family:var(--mono);font-size:8.5px;color:#54707C;letter-spacing:.08em;margin-top:7px;line-height:1.9">TEST · HUNGARIAN VS RL+HUNGARIAN, SAME SEEDS<br>FALSIFIED IF · GAIN ≈ 0 OR ENERGY COST EXCEEDS IT</div>
+      </div>
+      <div style="padding:12px 0">
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#5FA8A0">H3 · GRACE UNDER DISRUPTION</div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:#E7E2D4;line-height:1.5;margin-top:6px">The live cost model absorbs hazards and closures: affected agents re-route within one tick, invariants hold, nothing deadlocks.</div>
+        <div style="font-family:var(--mono);font-size:8.5px;color:#54707C;letter-spacing:.08em;margin-top:7px;line-height:1.9">TEST · SCENARIO-LAB INJECTIONS MID-RUN + TRACE REPLAY<br>FALSIFIED IF · RE-ROUTE LAGS OR ANY INVARIANT BREAKS</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:8.5px;color:#54707C;letter-spacing:.12em;padding-top:12px;line-height:1.9">
+        PHASE 4 = THE EXPERIMENTS · cli benchmark<br>
+        FALSIFICATION IS A VALID OUTCOME — THAT IS THE POINT
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 · CODA -->
+<section class="slide" data-section="CODA">
+  <div class="idx">06</div>
+  <div class="kick i rv">Coda — where we go from the downbeat</div>
+  <h2 class="rv">Stochastic streets.<br>Deterministic engineering.</h2>
+  <div class="cols" style="grid-template-columns:1.1fr .9fr;margin-top:26px">
+    <div class="rv" style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:22px 24px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase;margin-bottom:16px">Rehearsal schedule — four phases</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:16px;align-items:flex-start"><div class="reh">A</div>
+          <div><b style="font-size:14px">Phase 1 · The instrument</b><p style="font-size:12.5px">grid, agents, incident generator, engine — exit: seed-stable headless run</p></div></div>
+        <div style="display:flex;gap:16px;align-items:flex-start"><div class="reh">B</div>
+          <div><b style="font-size:14px">Phase 2 · The voices</b><p style="font-size:12.5px">A*/Dijkstra/HPA*, Hungarian, GA VRPTW, RL — exit: property tests vs. brute force</p></div></div>
+        <div style="display:flex;gap:16px;align-items:flex-start"><div class="reh">C</div>
+          <div><b style="font-size:14px">Phase 3 · The hall</b><p style="font-size:12.5px">mission-control web: canvas, telemetry, scenario lab — exit: live strategy swap</p></div></div>
+        <div style="display:flex;gap:16px;align-items:flex-start"><div class="reh">D</div>
+          <div><b style="font-size:14px">Phase 4 · Dress rehearsal</b><p style="font-size:12.5px">benchmarks, tests, CI gates — exit: every hypothesis on slide 5 meets its experiment; confirmed or falsified, either is a result</p></div></div>
+      </div>
+    </div>
+    <div class="stack" style="gap:14px">
+      <div class="rv" style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:18px 22px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase;margin-bottom:12px">Tuning — invariants we assert</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="chip">seeded ⇒ byte-identical replay</span>
+          <span class="chip">battery ∈ [0,1]</span>
+          <span class="chip">Hungarian ≤ greedy, always</span>
+          <span class="chip">no closed-edge traversal</span>
+          <span class="chip">violations logged, never dropped</span>
+        </div>
+      </div>
+      <div class="rv" style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:18px 22px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase;margin-bottom:10px">Encore · open questions</div>
+        <p style="font-size:13px">Batch window Δ vs. response latency · HPA* chunk granularity · fairness terms in the RL reward.</p>
+      </div>
+      <div class="rv" style="display:flex;justify-content:flex-end;align-items:center;gap:14px;padding-top:6px">
+        <svg width="44" height="26" viewBox="0 0 44 26">
+          <path d="M6 20 Q22 2 38 20" fill="none" stroke="var(--teal)" stroke-width="2.2"/>
+          <circle cx="22" cy="16" r="2.4" fill="var(--teal)"/>
+        </svg>
+        <div style="font-family:var(--serif);font-style:italic;font-size:26px;color:var(--teal)">Da capo — begin Phase One.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const sectionEl = document.getElementById('section');
+  const counterEl = document.getElementById('counter');
+  const N = slides.length;
+  let idx = 0, overview = false;
+
+  const MOV = ["OUVERTURE","MOV. I · ESPOSIZIONE","MOV. II · SVILUPPO","MOV. II · SVILUPPO","MOV. III · RONDÒ","CODA"];
+  const TEMPO = ["Maestoso ♩ = 76","Allegro deciso ♩ = 132","Andante, strumentazione ♩ = 88",
+                 "Moderato con spirito ♩ = 104","Presto con fuoco ♩ = 160","Lento, morendo ♩ = 52"];
+  const DYN = ["pp, dolce","mf, agitato","mp, cantabile","f, con spirito","ff con fuoco","pp morendo"];
+  const NOTES = ["C4","D4","E4","F4","G4","A4"];
+  const FREQ = {C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00};
+
+  slides.forEach((s,i)=>{
+    s.dataset.num = String(i+1).padStart(2,'0');
+    const d = document.createElement('div');
+    d.className = 'dyn';
+    d.textContent = DYN[i] + ' — ♩ ' + NOTES[i];
+    s.appendChild(d);
+  });
+
+  let actx=null, master=null, soundOn=true;
+  function ensureAudio(){
+    if(!actx){
+      try{
+        actx = new (window.AudioContext||window.webkitAudioContext)();
+        master = actx.createGain(); master.gain.value = .9; master.connect(actx.destination);
+      }catch(e){}
+    }
+    if(actx && actx.state==='suspended') actx.resume();
+  }
+  function strike(name, vol){
+    if(!soundOn || !actx || actx.state!=='running') return;
+    const f = FREQ[name] || 440, t = actx.currentTime, v = (vol==null?1:vol);
+    [[1,1,'triangle'],[2,.32,'sine'],[3.01,.1,'sine']].forEach(([mult,amp,type])=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = f*mult;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.05*amp*v, t+.008);
+      g.gain.exponentialRampToValueAtTime(.0001, t+1.2);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t+1.25);
+    });
+  }
+  addEventListener('pointerdown', ensureAudio, {passive:true});
+  addEventListener('keydown', ensureAudio);
+
+  const sndBtn = document.getElementById('snd');
+  sndBtn.addEventListener('click', ()=>{
+    soundOn = !soundOn;
+    sndBtn.classList.toggle('off', !soundOn);
+    if(soundOn){ ensureAudio(); strike(NOTES[idx], .7); }
+  });
+
+  const kb = document.getElementById('kb');
+  const kW = 30;
+  for(let i=0;i<N;i++){
+    const w = document.createElement('div');
+    w.className = 'wk'; w.title = NOTES[i];
+    w.addEventListener('click', ()=>{ if(!overview) go(i); });
+    kb.appendChild(w);
+  }
+  for(let i=0;i<N-1;i++){
+    if(i%7===2 || i%7===6) continue;
+    const b = document.createElement('div');
+    b.className = 'bk';
+    b.style.left = (5 + (i+1)*kW - 7.5) + 'px';
+    kb.appendChild(b);
+  }
+  const whites = kb.querySelectorAll('.wk');
+  function kbUpdate(){
+    whites.forEach((w,i)=>{
+      w.classList.toggle('played', i<idx);
+      w.classList.toggle('current', i===idx);
+      if(i===idx){ w.classList.remove('hit'); void w.offsetWidth; w.classList.add('hit'); }
+    });
+  }
+
+  function reveal(slide){
+    const items = slide.querySelectorAll('.rv');
+    items.forEach(el=>{ el.classList.remove('in'); el.style.transitionDelay='0ms'; });
+    void slide.offsetWidth;
+    items.forEach((el,k)=>{ el.style.transitionDelay = (180 + k*95)+'ms'; });
+    requestAnimationFrame(()=>requestAnimationFrame(()=>items.forEach(el=>el.classList.add('in'))));
+  }
+  function clearReveal(slide){
+    slide.querySelectorAll('.rv').forEach(el=>{el.classList.remove('in'); el.style.transitionDelay='0ms';});
+  }
+  function chrome(){
+    sectionEl.innerHTML = MOV[idx] + ' <span class="tempo">— ' + TEMPO[idx] + '</span>';
+    counterEl.innerHTML = '<b>'+String(idx+1).padStart(2,'0')+'</b> / 0'+N;
+  }
+  function go(i){
+    i = Math.max(0, Math.min(N-1, i));
+    if(i===idx && slides[i].classList.contains('active')){ chrome(); kbUpdate(); return; }
+    clearReveal(slides[idx]);
+    slides[idx].classList.remove('active');
+    idx = i;
+    slides[idx].classList.add('active');
+    reveal(slides[idx]);
+    chrome(); kbUpdate();
+    strike(NOTES[idx]);
+    history.replaceState(null,'','#/'+(idx+1));
+  }
+  function fit(){
+    if(overview){
+      const cols = innerWidth > 1500 ? 3 : 2;
+      const k = (innerWidth - 128 - (cols-1)*30) / (cols*1280);
+      document.documentElement.style.setProperty('--ocols', cols);
+      document.documentElement.style.setProperty('--ok', Math.min(k,.6));
+      return;
+    }
+    const s = Math.min(innerWidth/1280, innerHeight/720) * .97;
+    document.documentElement.style.setProperty('--s', s);
+  }
+  function toggleOverview(force){
+    overview = (force!==undefined) ? force : !overview;
+    document.body.classList.toggle('ov', overview);
+    fit();
+    if(!overview) reveal(slides[idx]);
+  }
+
+  slides.forEach((s,i)=>{
+    s.addEventListener('click', ()=>{ if(overview){ go(i); toggleOverview(false); } });
+  });
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); if(!overview) go(idx+1); }
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); go(idx-1); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(N-1); }
+    else if(e.key==='g' || e.key==='G'){ toggleOverview(); }
+    else if(e.key==='Escape' && overview){ toggleOverview(false); }
+  });
+  document.getElementById('next').onclick = ()=>go(idx+1);
+  document.getElementById('prev').onclick = ()=>go(idx-1);
+  document.getElementById('ovbtn').onclick = ()=>toggleOverview();
+  addEventListener('resize', fit);
+
+  const m = location.hash.match(/#\/(\d+)/);
+  fit();
+  go(m ? Math.min(N-1, Math.max(0, parseInt(m[1],10)-1)) : 0);
+})();
+</script>
+</body>
+</html>

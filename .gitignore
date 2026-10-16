@@ -1,0 +1,47 @@
+# C++ Build outputs & binaries
+build/
+bin/
+obj/
+*.obj
+*.o
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.pyd
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Python bytecode & environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# Frontend & Node dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+.npm/
+
+# Runtime temporary files
+.backend_port
+*.log
+*.wal
+*.idx
+data/jobs.db
+
+# IDE & OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
